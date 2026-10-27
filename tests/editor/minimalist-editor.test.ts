@@ -527,9 +527,10 @@ describe("minimalist editor frame", () => {
       }).at(-1) ?? "";
 
     expect(pathLine("compact")).toContain("lib");
-    expect(pathLine("project", `${homedir()}/workspace/repo`)).toContain(
-      "repo/src/lib",
-    );
+    // Windows 上 join/相对路径用反斜杠，断言前统一成正斜杠。
+    expect(
+      pathLine("project", `${homedir()}/workspace/repo`).replaceAll("\\", "/"),
+    ).toContain("repo/src/lib");
     expect(pathLine("project")).toContain("~/workspace/repo/src/lib");
     expect(pathLine("full")).toContain("~/workspace/repo/src/lib");
   });

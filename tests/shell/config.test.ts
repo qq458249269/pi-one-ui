@@ -2079,46 +2079,54 @@ describe("startup and file safety", () => {
     });
   });
 
-  it("preserves destination mode during atomic replacement", () => {
-    withConfig({ separator: "pipe" }, (path, dir) => {
-      chmodSync(path, 0o600);
-      saveSeparatorPatch("dot", path);
-      expect(statSync(path).mode & 0o777).toBe(0o600);
-      expect(readRaw(path).components.footer.styles.starship.separator).toBe(
-        "dot",
-      );
-      expect(configTempFiles(dir)).toEqual([]);
-    });
-  });
+  // Windows 的 chmod 不保留权限位（永远 0o666），跳过。
+  it.skipIf(process.platform === "win32")(
+    "preserves destination mode during atomic replacement",
+    () => {
+      withConfig({ separator: "pipe" }, (path, dir) => {
+        chmodSync(path, 0o600);
+        saveSeparatorPatch("dot", path);
+        expect(statSync(path).mode & 0o777).toBe(0o600);
+        expect(readRaw(path).components.footer.styles.starship.separator).toBe(
+          "dot",
+        );
+        expect(configTempFiles(dir)).toEqual([]);
+      });
+    },
+  );
 
-  it("updates a symlink target atomically without replacing the symlink", () => {
-    const dir = mkdtempSync(join(tmpdir(), "pi-one-ui-symlink-config-"));
-    const targetDir = join(dir, "target");
-    const targetPath = join(targetDir, "actual.json");
-    const linkPath = join(dir, "pi-one-ui.json");
-    try {
-      mkdirSync(targetDir);
-      writeFileSync(
-        targetPath,
-        `${JSON.stringify({ unknown: true }, null, 2)}\n`,
-      );
-      chmodSync(targetPath, 0o600);
-      symlinkSync(targetPath, linkPath);
-      const originalLink = readlinkSync(linkPath);
-      const config = saveSeparatorPatch("chevron", linkPath);
-      const raw = readRaw(targetPath);
-      expect(lstatSync(linkPath).isSymbolicLink()).toBe(true);
-      expect(readlinkSync(linkPath)).toBe(originalLink);
-      expect(raw.unknown).toBe(true);
-      expect(raw.components.footer.styles.starship.separator).toBe("chevron");
-      expect(config).toEqual(mergeConfig(raw));
-      expect(statSync(targetPath).mode & 0o777).toBe(0o600);
-      expect(configTempFiles(targetDir, "actual.json")).toEqual([]);
-      expect(configTempFiles(dir)).toEqual([]);
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
-  });
+  // Windows 默认不允许普通用户建符号链接（需开发者模式/管理员），跳过。
+  it.skipIf(process.platform === "win32")(
+    "updates a symlink target atomically without replacing the symlink",
+    () => {
+      const dir = mkdtempSync(join(tmpdir(), "pi-one-ui-symlink-config-"));
+      const targetDir = join(dir, "target");
+      const targetPath = join(targetDir, "actual.json");
+      const linkPath = join(dir, "pi-one-ui.json");
+      try {
+        mkdirSync(targetDir);
+        writeFileSync(
+          targetPath,
+          `${JSON.stringify({ unknown: true }, null, 2)}\n`,
+        );
+        chmodSync(targetPath, 0o600);
+        symlinkSync(targetPath, linkPath);
+        const originalLink = readlinkSync(linkPath);
+        const config = saveSeparatorPatch("chevron", linkPath);
+        const raw = readRaw(targetPath);
+        expect(lstatSync(linkPath).isSymbolicLink()).toBe(true);
+        expect(readlinkSync(linkPath)).toBe(originalLink);
+        expect(raw.unknown).toBe(true);
+        expect(raw.components.footer.styles.starship.separator).toBe("chevron");
+        expect(config).toEqual(mergeConfig(raw));
+        expect(statSync(targetPath).mode & 0o777).toBe(0o600);
+        expect(configTempFiles(targetDir, "actual.json")).toEqual([]);
+        expect(configTempFiles(dir)).toEqual([]);
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+  );
 
   it("refuses a dangling symlink without changing it", () => {
     const dir = mkdtempSync(join(tmpdir(), "pi-one-ui-dangling-config-"));
