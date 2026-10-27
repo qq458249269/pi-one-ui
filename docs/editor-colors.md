@@ -47,22 +47,22 @@
 所有颜色都写在 `colors` 对象里。Editor 用到的字段分两类：
 
 - **Pi 官方支持的颜色 token**：主题文件 `colors` 字段里自带的那些，用户写这些字段时会被主题调色板上色（切主题自动换色），例如 `syntaxKeyword`、`borderMuted`、`thinkingMax` 等。
-- **pi-one-ui 自定义的扩展颜色键**：`cwd`、`editorModel`、`editorBorder` 等，主题文件 `colors` 里可以写这些键来自定义 pi-one-ui 的 UI 样式；主题里不写时，组件回落到 Pi 官方 theme token（原生默认）。
+- **pi-one-ui 自定义的扩展颜色键**：`cwd`、`editorModel`、`editorBorder` 等，写在 `pi-one-ui.json` 的 `colors` 里自定义 pi-one-ui 的 UI 样式；**不要写进主题文件**——Pi 的主题校验是严格的（`colors` 不允许额外键），多写一个键整份主题都会被判非法。未配置时组件回落到 Pi 官方 theme token（原生默认）。
 
 ### 2.1 编辑器专属字段（可选，未配置时走回退链）
 
 | 字段 | 作用 | 未配置时的回退 |
 |---|---|---|
-| `cwd` ① | 右下角当前目录标签 | 主题文件 `colors` 中的同名扩展键 → 原生默认（bold + 主题 `syntaxFunction` 语义色） |
-| `editorBorder` ① | 编辑器外框与补全下拉选中项颜色（`static` 模式） | 主题文件 `colors` 中的同名扩展键 → 原生默认（主题 `borderMuted` 语义色） |
-| `editorModel` ① | 模型名标签（Minimalist 帧内） | 主题文件 `colors` 中的同名扩展键 → 原生默认（主题 `syntaxKeyword` 语义色） |
+| `cwd` ① | 右下角当前目录标签 | 原生默认（bold + 主题 `syntaxFunction` 语义色） |
+| `editorBorder` ① | 编辑器外框与补全下拉选中项颜色（`static` 模式） | 原生默认（主题 `borderMuted` 语义色） |
+| `editorModel` ① | 模型名标签（Minimalist 帧内） | 原生默认（主题 `syntaxKeyword` 语义色） |
 | `editorProvider` | metadata 模板 `$provider` | 统一回落主题 `text` |
 | `editorGitBranch` | 分支名标签 | 主题 `bold syntaxKeyword` |
 | `editorAccent` | Rail 竖条与左侧强调 | 主题 `accent` |
 | `editorThinking` | thinking 标签通用色 | 主题 `warning` |
 | `editorThinkingMinimal` / `Low` / `Medium` / `High` / `Xhigh` / `Max` | thinking 分档颜色，优先于 `editorThinking`；adaptive 模式下同时作用于边框与补全下拉选中项 | 同 `editorThinking` |
 
-带 ① 标记的 `cwd`、`editorBorder`、`editorModel` 是 pi-one-ui 自定义的扩展颜色键，主题文件 `colors` 中存在时才生效；主题文件未写这些键时，组件直接回退到 Pi 官方 theme token（fallback）。表中其他字段（`editorProvider`、`editorGitBranch`、`editorAccent`、`editorThinking*`）以及第 2.2 节共用字段的默认值都是 Pi 官方 theme token；用户改写后要写 Pi 官方 theme token 或显式终端色，详见第 3 节。
+带 ① 标记的 `cwd`、`editorBorder`、`editorModel` 是 pi-one-ui 的配置键，只能写在 `pi-one-ui.json` 的 `colors`：Pi 的主题文件校验不允许 `colors` 出现额外键，写进主题会把整份主题判为非法。未配置时组件回退到 Pi 官方 theme token（fallback）。
 
 ### 2.2 共用字段（有内置默认值）
 
@@ -96,7 +96,7 @@
 
 ## 3. 配置值如何解释
 
-所有 `colors.*` 值统一按 theme 语义解释，规则是**官方 theme token + 显式终端色**。写入 `colors.*` 的官方 theme token 会随主题切换自动换色；`cwd`、`editorModel`、`editorBorder` 是 pi-one-ui 为 Editor 添加的自定义扩展键，主题里不写时回落到原生默认（Pi 官方 theme token）。
+所有 `colors.*` 值统一按 theme 语义解释，规则是**官方 theme token + 显式终端色**。写入 `colors.*` 的官方 theme token 会随主题切换自动换色；`cwd`、`editorModel`、`editorBorder` 是 pi-one-ui 为 Editor 添加的配置键（写在 `pi-one-ui.json`，不写进主题文件），未配置时回落到原生默认（Pi 官方 theme token）。
 
 规则如下：
 
@@ -111,9 +111,9 @@
    - 编辑器/消息底色和装饰：`selectedBg`、`scrollbarTrack`、`scrollbarThumb`、`userMessageText`、`customMessageText`、`customMessageLabel`、`toolTitle`、`toolOutput`。
    - Markdown与高亮：`mdHeading`、`mdLink`、`mdLinkUrl`、`mdCode`、`mdCodeBlock`、`mdCodeBlockBorder`、`mdQuote`、`mdQuoteBorder`、`mdHr`、`mdListBullet`、`toolDiffAdded`、`toolDiffRemoved`、`toolDiffContext`、`syntaxComment`、`syntaxKeyword`、`syntaxFunction`、`syntaxVariable`、`syntaxString`、`syntaxNumber`、`syntaxType`、`syntaxOperator`、`syntaxPunctuation`。
    - 主题 background 键如果写进 `colors.*`，会被 `theme.fg()` 解析，例如 `selectedBg` 可以当作代码块/选中区的颜色用。
-3. **扩展颜色键可以被主题额外覆盖**：`cwd`、`editorModel`、`editorBorder` 等是 pi-one-ui 自定义的扩展键；主题文件 `colors` 中可以选写这些键来自定义 pi-one-ui 的 UI 样式，主题未定义时再回落到第 2 节的原生默认（官方 theme token）。自定义主题位于 `~/.pi/agent/themes/*.json`，自带主题位于 `themes/*.json`。
+3. **扩展颜色键只写在配置里**：`cwd`、`editorModel`、`editorBorder` 等是 pi-one-ui 自定义的配置键，写在 `pi-one-ui.json` 的 `colors`；Pi 的主题文件校验是严格的（`colors` 多一个键 = 整份主题非法），所以主题文件（本仓库 `themes/*.json` 与 `~/.pi/agent/themes/*.json`）里不要写这些键。未配置时回落到第 2 节的原生默认（官方 theme token）。
 
-一句话总结：**跟随主题写官方 theme token，固定颜色写 hex/数字/`fg:`/`bg:`；终端色名必须带前缀；扩展颜色键中可额外覆盖 `cwd`、`editorModel`、`editorBorder`。**
+一句话总结：**跟随主题写官方 theme token，固定颜色写 hex/数字/`fg:`/`bg:`；终端色名必须带前缀；扩展颜色键 `cwd`、`editorModel`、`editorBorder` 只写在 `pi-one-ui.json`，不写进主题文件。**
 
 ## 4. 边框与 thinking 档位
 

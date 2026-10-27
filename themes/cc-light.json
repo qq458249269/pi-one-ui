@@ -81,10 +81,7 @@
 		"thinkingHigh": "accentBright",
 		"thinkingXhigh": "#4a8fa3",
 		"thinkingMax": "cyan",
-		"bashMode": "green",
-		"cwd": "blue",
-		"editorModel": "blue",
-		"editorBorder": "blue"
+		"bashMode": "green"
 	},
 	"export": {
 		"pageBg": "bg",

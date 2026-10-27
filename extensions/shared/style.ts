@@ -437,8 +437,8 @@ function themeHasToken(theme: ThemeLike, token: string): boolean {
 /**
  * 颜色统一渲染入口（配置优先，其次主题 token，最后原生默认）：
  * - 配置了 spec：按 theme 语义解释（token/hex/数字/fg:/bg:）；
- * - 未配置：主题定义了 themeToken（cwd/editorModel/editorBorder）时用主题色，
- *   否则回落原生默认 themeDefault。
+ * - 未配置：主题定义了 themeToken（cwd/editorModel/editorBorder）时用主题色
+ *   （Pi 严格主题校验不允许这些键，故此路实际不会命中），否则回落原生默认 themeDefault。
  */
 export function renderSourceColor(
   theme: ThemeLike,
